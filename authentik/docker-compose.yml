@@ -1,0 +1,89 @@
+services:
+  redis:
+    image: docker.io/library/redis:alpine
+    container_name: authentik-redis
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - authentik_redis:/data
+    networks:
+      - authentik_backend
+
+  server:
+    image: ghcr.io/goauthentik/server:latest
+    container_name: authentik-server
+    restart: unless-stopped
+    command: server
+    environment:
+      - AUTHENTIK_REDIS__HOST=redis
+      - AUTHENTIK_POSTGRESQL__HOST=${AUTHENTIK_DB_HOST}
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_DB_USER}
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_DB_NAME}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_DB_PASSWORD}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=true
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_EMAIL__HOST=balezeau.fr
+      - AUTHENTIK_EMAIL__PORT=465
+      - AUTHENTIK_EMAIL__USERNAME=authentik@balezeau.fr
+      - AUTHENTIK_EMAIL__PASSWORD=${AUTHENTIK_EMAIL__PASSWORD}
+      - AUTHENTIK_EMAIL__USE_SSL=true
+      - AUTHENTIK_EMAIL__TIMEOUT=10
+      - AUTHENTIK_EMAIL__FROM=authentik@balezeau.fr
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+    ports:
+      - "9001:9000"
+      - "9443:9443"
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - authentik_backend
+      - postgres_backend
+      - treafik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik-rtr.entrypoints=websecure"
+      - "traefik.http.routers.authentik-rtr.rule=Host(`authentik.balezeau.fr`)"
+      - "traefik.http.routers.authentik-rtr.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.authentik-rtr.service=authentik-svc"
+      - "traefik.http.services.authentik-svc.loadbalancer.server.port=9000"
+
+  worker:
+    image: ghcr.io/goauthentik/server:latest
+    container_name: authentik-worker
+    restart: unless-stopped
+    command: worker
+    user: root
+    environment:
+      - AUTHENTIK_REDIS__HOST=redis
+      - AUTHENTIK_POSTGRESQL__HOST=${AUTHENTIK_DB_HOST}
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_DB_USER}
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_DB_NAME}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_DB_PASSWORD}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=true
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_EMAIL__HOST=balezeau.fr
+      - AUTHENTIK_EMAIL__PORT=465
+      - AUTHENTIK_EMAIL__USERNAME=authentik@balezeau.fr
+      - AUTHENTIK_EMAIL__PASSWORD=${AUTHENTIK_EMAIL__PASSWORD}
+      - AUTHENTIK_EMAIL__USE_SSL=true
+      - AUTHENTIK_EMAIL__TIMEOUT=10
+      - AUTHENTIK_EMAIL__FROM=authentik@balezeau.fr
+    volumes:
+      - ./media:/media
+      - ./certs:/certs
+      - ./custom-templates:/templates
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - authentik_backend
+      - socket_proxy

@@ -1,0 +1,14 @@
+services:
+  core-keeper:
+    image: escaping/core-keeper-dedicated:latest
+    container_name: core-keeper-alten
+    restart: unless-stopped
+    stop_grace_period: 2m
+    ports:
+      - "27015:27015/udp"
+    volumes:
+      - core_keeper_alten_files:/home/steam/core-keeper-dedicated
+      - core_keeper_alten_data:/home/steam/core-keeper-data
+    env_file:
+      - path: core.env
+        required: false

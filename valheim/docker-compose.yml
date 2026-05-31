@@ -1,0 +1,21 @@
+services:
+  valheim-server:
+    image: lloesche/valheim-server
+    container_name: valheim-server
+    restart: unless-stopped
+    cap_add:
+      - SYS_NICE
+    stop_grace_period: "2m"
+    ports:
+      - "27016:27016/udp"
+    volumes:
+      - ./config:/config
+      - ./data:/opt/valheim
+    environment:
+      SERVER_NAME: "Le serveur des Collègues"
+      SERVER_PORT: 27016
+      SERVER_PASS: "12345"
+      WORLD_NAME: "ALTEN"
+      SERVER_PUBLIC: "false"
+      BEPINEX: "true"
+      TZ: "Europe/Paris"

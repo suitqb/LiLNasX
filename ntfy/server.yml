@@ -1,0 +1,12 @@
+base-url: "https://ntfy.balezeau.fr"
+
+# Stockage
+cache-file: "/var/cache/ntfy/cache.db"
+cache-duration: "24h"
+
+# Auth — personne ne peut publier/lire sans token
+auth-file: "/var/cache/ntfy/auth.db"
+auth-default-access: "deny-all"
+
+# Derrière Traefik
+behind-proxy: true

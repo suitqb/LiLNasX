@@ -1,0 +1,21 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - treafik_proxy
+    volumes:
+      - gluetun_data:/gluetun
+      - ./config:/tmp/gluetun
+    environment:
+      - VPN_SERVICE_PROVIDER=cyberghost
+      - VPN_TYPE=openvpn
+      - SERVER_COUNTRIES=Switzerland
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - TZ=Europe/Paris

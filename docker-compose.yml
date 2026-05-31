@@ -1,0 +1,111 @@
+include:
+  # --- Core ---
+  - socket-proxy/docker-compose.yml
+  - traefik/docker-compose.yml
+  - postgres/docker-compose.yml
+  - authentik/docker-compose.yml
+  # --- Infra ---
+  - portainer/docker-compose.yml
+  - wg-easy/docker-compose.yml
+  - cloudflare-ddns/docker-compose.yml
+  - ntfy/docker-compose.yml
+  - kuma/docker-compose.yml
+  # --- Apps ---
+  - vaultwarden/docker-compose.yml
+  - syncthing/docker-compose.yml
+  - nginx/docker-compose.yml
+  - stalwart/docker-compose.yml
+  - bulwark/docker-compose.yml
+  - immich/docker-compose.yml
+  - gluetun/docker-compose.yml
+  # --- Games ---
+  - minecraft/docker-compose.yml
+  - valheim/docker-compose.yml
+  - core-keeper/docker-compose.yml
+
+networks:
+  socket_proxy:
+    name: socket_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+  treafik_proxy:
+    name: treafik_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.90.0/24
+  authentik_backend:
+    name: authentik_backend
+    driver: bridge
+  postgres_backend:
+    name: postgres_backend
+    driver: bridge
+  immich_internal:
+    name: immich_internal
+    driver: bridge
+
+secrets:
+  api_token_cloudflare:
+    file: ./secrets/api_token_cloudflare
+
+volumes:
+  # Volumes créés manuellement (external: true)
+  authentik_postgres:
+    name: postgres-data
+    external: true
+  authentik_redis:
+    name: authentik-redis
+    external: true
+  certs:
+    name: traefik_certs
+    external: true
+  portainer_data:
+    name: portainer_data
+    external: true
+  wireguard_data:
+    name: wg-easy-data
+    external: true
+  uptime_kuma_data:
+    name: uptime-kuma
+    external: true
+  vw_data:
+    name: vaultwarden-data
+    external: true
+  stalwart_etc:
+    name: stalwart-etc
+    external: true
+  stalwart_data:
+    name: stalwart-data
+    external: true
+  core_keeper_alten_files:
+    name: core_keeper_alten_files
+    external: true
+  core_keeper_alten_data:
+    name: core_keeper_alten_data
+    external: true
+  portfolio_data:
+    name: portfolio-data
+    external: true
+  ntfy_data:
+    name: ntfy-data
+    external: true
+  gluetun_data:
+    name: gluetun
+    external: true
+  immich_model_cache:
+    name: immich-model-cache
+    external: true
+  bulwark-settings:
+    name: bulwark-settings
+    external: true
+  bulwark-admin:
+    name: bulwark-admin
+    external: true
+  bulwark-admin-state:
+    name: bulwark-admin-state
+    external: true
+  bulwark-telemetry:
+    name: bulwark-telemetry
+    external: true

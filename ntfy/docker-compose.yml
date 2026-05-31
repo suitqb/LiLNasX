@@ -1,0 +1,22 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    restart: unless-stopped
+    command: serve
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - treafik_proxy
+    volumes:
+      - ntfy_data:/var/cache/ntfy
+      - ./server.yml:/etc/ntfy/server.yml:ro
+    environment:
+      - TZ=Europe/Paris
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ntfy-rtr.entrypoints=websecure"
+      - "traefik.http.routers.ntfy-rtr.rule=Host(`ntfy.balezeau.fr`)"
+      - "traefik.http.routers.ntfy-rtr.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.ntfy-rtr.service=ntfy-svc"
+      - "traefik.http.services.ntfy-svc.loadbalancer.server.port=80"

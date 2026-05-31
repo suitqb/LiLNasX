@@ -1,0 +1,33 @@
+services:
+  webmail:
+    image: ghcr.io/bulwarkmail/webmail:latest
+    container_name: bulwark
+    restart: unless-stopped
+    networks:
+      - treafik_proxy
+    ports:
+      - "3000:3000"
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+    env_file:
+      - .env
+    volumes:
+      - bulwark-settings:/app/data/settings
+      - bulwark-admin:/app/data/admin
+      - bulwark-admin-state:/app/data/admin-state
+      - bulwark-telemetry:/app/data/telemetry
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bulwark-rtr.entrypoints=websecure"
+      - "traefik.http.routers.bulwark-rtr.rule=Host(`webmail.balezeau.fr`)"
+      - "traefik.http.routers.bulwark-rtr.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.bulwark-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.bulwark-rtr.service=bulwark-svc"
+      - "traefik.http.services.bulwark-svc.loadbalancer.server.port=3000"
