@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     networks:
       - socket_proxy
-      - treafik_proxy
+      - traefik_proxy
     command: -H tcp://socket-proxy:2375
     ports:
       - "9000:9000"

@@ -1,10 +1,10 @@
 services:
   vaultwarden:
-    image: vaultwarden/server:latest
+    image: vaultwarden/server:1.36.0
     container_name: vaultwarden
     restart: unless-stopped
     networks:
-      - treafik_proxy
+      - traefik_proxy
       - socket_proxy
     volumes:
       - vw_data:/data
@@ -13,5 +13,6 @@ services:
       - "traefik.http.routers.vault-rtr.entrypoints=websecure"
       - "traefik.http.routers.vault-rtr.middlewares=chain-no-auth@file"
       - "traefik.http.routers.vault-rtr.rule=Host(`vault.balezeau.fr`)"
+      - "traefik.http.routers.vault-rtr.tls=true"
       - "traefik.http.routers.vault-rtr.service=vault-svc"
       - "traefik.http.services.vault-svc.loadbalancer.server.port=80"

@@ -4,7 +4,7 @@ services:
     container_name: nginx
     restart: unless-stopped
     networks:
-      - treafik_proxy
+      - traefik_proxy
     volumes:
       - ./sites:/www:ro
       - ./conf.d:/etc/nginx/conf.d:ro
@@ -18,13 +18,9 @@ services:
     container_name: portfolio
     restart: unless-stopped
     networks:
-      - treafik_proxy
-    volumes:
-      - portfolio_data:/app/data
-    environment:
-      - NODE_ENV=production
-      - ADMIN_PASSWORD=${PORTFOLIO_ADMIN_PASSWORD}
-      - DATABASE_PATH=/app/data/portfolio.db
+      - traefik_proxy
+    env_file:
+      - ./sites/portfolio/.env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portfolio-rtr.entrypoints=websecure"

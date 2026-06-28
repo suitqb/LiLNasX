@@ -1,11 +1,11 @@
 services:
   syncthing:
-    image: syncthing/syncthing
+    image: syncthing/syncthing:latest
     container_name: syncthing
     hostname: my-syncthing
     restart: unless-stopped
     networks:
-      - treafik_proxy
+      - traefik_proxy
     environment:
       - PUID=1000
       - PGID=1000

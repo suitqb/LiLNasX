@@ -4,11 +4,12 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     restart: unless-stopped
     networks:
-      - treafik_proxy
+      - traefik_proxy
       - immich_internal
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - immich_data:/data
     env_file:
       - .env
     environment:
@@ -43,6 +44,8 @@ services:
     restart: unless-stopped
     networks:
       - immich_internal
+    volumes:
+      - immich_redis_data:/data
     healthcheck:
       test: redis-cli ping || exit 1
       interval: 30s

@@ -1,13 +1,12 @@
 services:
   traefik:
     container_name: traefik
-    image: traefik:latest
+    image: traefik:v3.7.4
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
     networks:
-      treafik_proxy:
-        ipv4_address: 192.168.90.9
+      traefik_proxy:
       socket_proxy:
     command:
       # --- Global ---
@@ -21,10 +20,7 @@ services:
       # --- Logs ---
       - --log=true
       - --log.filePath=/logs/traefik.log
-      - --log.level=ERROR
-      - --accessLog=true
-      - --accessLog.filePath=/logs/access.log
-      - --accessLog.bufferingSize=100
+      - --log.level=DEBUG
       - --accessLog.filters.statusCodes=204-299,400-499,500-599
 
       # --- Entrypoint : HTTP (80) → redirect HTTPS + HTTP/3 ---
@@ -60,7 +56,7 @@ services:
       - --providers.docker=true
       - --providers.docker.endpoint=tcp://socket-proxy:2375
       - --providers.docker.exposedByDefault=false
-      - --providers.docker.network=treafik_proxy
+      - --providers.docker.network=traefik_proxy
       - --providers.file.directory=/rules
       - --providers.file.watch=true
 
@@ -124,3 +120,4 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./acme:/traefik:ro
       - certs:/output
+      - traefik_certs_dumper_data:/var/lib/docker

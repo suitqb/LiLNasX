@@ -7,7 +7,7 @@ services:
     security_opt:
       - no-new-privileges:true
     networks:
-      - treafik_proxy
+      - traefik_proxy
     volumes:
       - ntfy_data:/var/cache/ntfy
       - ./server.yml:/etc/ntfy/server.yml:ro

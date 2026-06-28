@@ -1,27 +1,10 @@
 services:
-  redis:
-    image: docker.io/library/redis:alpine
-    container_name: authentik-redis
-    command: --save 60 1 --loglevel warning
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 3s
-    volumes:
-      - authentik_redis:/data
-    networks:
-      - authentik_backend
-
   server:
-    image: ghcr.io/goauthentik/server:latest
+    image: ghcr.io/goauthentik/server:2026.5.2
     container_name: authentik-server
     restart: unless-stopped
     command: server
     environment:
-      - AUTHENTIK_REDIS__HOST=redis
       - AUTHENTIK_POSTGRESQL__HOST=${AUTHENTIK_DB_HOST}
       - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_DB_USER}
       - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_DB_NAME}
@@ -43,11 +26,10 @@ services:
       - "9443:9443"
     depends_on:
       - postgresql
-      - redis
     networks:
       - authentik_backend
       - postgres_backend
-      - treafik_proxy
+      - traefik_proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.authentik-rtr.entrypoints=websecure"
@@ -57,13 +39,12 @@ services:
       - "traefik.http.services.authentik-svc.loadbalancer.server.port=9000"
 
   worker:
-    image: ghcr.io/goauthentik/server:latest
+    image: ghcr.io/goauthentik/server:2026.5.2
     container_name: authentik-worker
     restart: unless-stopped
     command: worker
     user: root
     environment:
-      - AUTHENTIK_REDIS__HOST=redis
       - AUTHENTIK_POSTGRESQL__HOST=${AUTHENTIK_DB_HOST}
       - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_DB_USER}
       - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_DB_NAME}
@@ -83,7 +64,6 @@ services:
       - ./custom-templates:/templates
     depends_on:
       - postgresql
-      - redis
     networks:
       - authentik_backend
       - socket_proxy
