@@ -1,0 +1,42 @@
+services:
+  seafile-memcached:
+    image: memcached:1.6-alpine
+    container_name: seafile-memcached
+    restart: unless-stopped
+    entrypoint: memcached -m 256
+    networks:
+      - seafile_internal
+
+  seafile:
+    image: seafileltd/seafile-mc:latest
+    container_name: seafile
+    restart: unless-stopped
+    depends_on:
+      - seafile-memcached
+    volumes:
+      - seafile_data:/shared
+    environment:
+      - DB_HOST=${SEAFILE_DB_HOST}
+      - DB_ROOT_PASSWD=${SEAFILE_DB_ROOT_PASSWD}
+      - USE_EXISTING_DB=0
+      - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL}
+      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD}
+      - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE_SERVER_HOSTNAME=cloud.balezeau.fr
+      - TIME_ZONE=Europe/Paris
+      - MEMCACHED_HOST=seafile-memcached
+      - SEAHUB_SECRET_KEY=${SEAHUB_SECRET_KEY}
+      - SEAHUB_DB_PASSWORD=${SEAHUB_DB_PASSWORD}
+      - OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
+    networks:
+      - traefik_proxy
+      - mariadb_backend
+      - seafile_internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.seafile-rtr.entrypoints=websecure"
+      - "traefik.http.routers.seafile-rtr.rule=Host(`cloud.balezeau.fr`)"
+      - "traefik.http.routers.seafile-rtr.tls=true"
+      - "traefik.http.routers.seafile-rtr.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.seafile-rtr.service=seafile-svc"
+      - "traefik.http.services.seafile-svc.loadbalancer.server.port=80"
